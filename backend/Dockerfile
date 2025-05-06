@@ -29,3 +29,18 @@ EOF
 # install Docker tools (cli, buildx, compose)
 COPY --from=gloursdocker/docker / /
 CMD [ "npm", "run", "dev" ]
+
+# Production stage
+FROM node:lts-buster-slim AS production
+
+WORKDIR /usr/src/app
+
+COPY package.json /usr/src/app/package.json
+COPY package-lock.json /usr/src/app/package-lock.json
+RUN npm ci --only=production
+
+COPY . /usr/src/app
+
+EXPOSE 3000
+
+CMD [ "npm", "start" ]

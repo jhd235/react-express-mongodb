@@ -39,3 +39,22 @@ EOF
 # install Docker tools (cli, buildx, compose)
 COPY --from=gloursdocker/docker / /
 CMD [ "npm", "start" ]
+
+# Production stage
+FROM node:lts-buster-slim AS production
+
+WORKDIR /usr/src/app
+
+COPY package.json /usr/src/app/package.json
+COPY package-lock.json /usr/src/app/package-lock.json
+RUN npm ci
+
+COPY . /usr/src/app
+RUN npm run build
+
+# Install serve to run the application
+RUN npm install -g serve
+
+EXPOSE 3000
+
+CMD ["serve", "-s", "build", "-l", "3000"]
