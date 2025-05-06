@@ -1,0 +1,58 @@
+services:
+  frontend:
+    build:
+      context: frontend
+      target: development
+    ports:
+      - 3000:3000
+    stdin_open: true
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: always
+    networks:
+      - react-express
+    depends_on:
+      - backend
+    environment:
+      - BROWSER=none
+      - REACT_APP_API_URL=http://localhost:3000
+
+  backend:
+    restart: always
+    build:
+      context: backend
+      target: development
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - mongo
+    networks:
+      - express-mongo
+      - react-express
+    expose: 
+      - 3000
+  mongo:
+    restart: always
+    image: mongo:4.2.0
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - express-mongo
+    expose:
+      - 27017
+
+networks:
+  react-express:
+    name: react-express
+    labels:
+      com.docker.compose.network: "react-express"
+  express-mongo:
+    name: express-mongo
+    labels:
+      com.docker.compose.network: "express-mongo"
+
+volumes:
+  mongo_data:
+    name: mongo_data
